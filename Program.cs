@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Windows.Forms;
 using System.Linq;
+using System.Windows.Forms;
 
 namespace CorrelationCalculator
 {
 	/// <summary>
 	/// Class containing the main entry point into the console application.
 	/// </summary>
-	class Program
+	internal class Program
 	{
 		/// <summary>
 		/// Main entry point into the console application.
@@ -34,18 +34,39 @@ namespace CorrelationCalculator
 				Console.WriteLine(column);
 			}
 			Console.WriteLine("Your first choice: ");
-			var column1 = Console.ReadLine().Trim().ToLower();
+			var choice1 = Console.ReadLine().Trim();
+			Console.WriteLine();
 
 			Console.WriteLine("Please pick a column from these remaining options: ");
-			foreach (var column  in columns)
+			foreach (var column in columns)
 			{
-				if (column != column1)
+				if (column != choice1)
 				{
 					Console.WriteLine(column);
 				}
 			}
-			var column2 = Console.ReadLine().Trim().ToLower();
+			Console.WriteLine("Your second choice:");
+			var choice2 = Console.ReadLine().Trim();
+			Console.WriteLine();
 
+			// Readying the data
+			var column1Index = Array.IndexOf(columns, choice1);
+			var column2Index = Array.IndexOf(columns, choice2);
+
+			List<double> column1 = new List<double>();
+			List<double> column2 = new List<double>();
+
+			var query = File.ReadAllLines(path)
+				.Skip(1)
+				.Where(l => l.Length > 1);
+
+			foreach (var item in query)
+			{
+				var entry = item.Split(',');
+
+				column1.Add((double.Parse(entry[column1Index])));
+				column2.Add((double.Parse(entry[column2Index])));
+			}
 		}
 	}
 }
