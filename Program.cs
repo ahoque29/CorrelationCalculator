@@ -17,42 +17,35 @@ namespace CorrelationCalculator
 		[STAThread]
 		private static void Main()
 		{
-			// Prompt user for file
+			// Prompt user for file and store the path
 			Console.WriteLine("Please select a file: \n");
 			var fd = new OpenFileDialog();
 			fd.ShowDialog();
 			var path = fd.FileName;
 
-			// Prompt user to pick two columns
-			var optionsArray = File.ReadLines(path)
+			// Prompt user to pick two columns and store the names of the columns
+			var columns = File.ReadLines(path)
 				.First()
 				.Split(',');
 
-			var options = new Dictionary<int, string>();
-			var optionsCounter = 1;
-
-			foreach (var item in optionsArray)
+			Console.WriteLine("Please pick a column from these given options: ");
+			foreach (var column in columns)
 			{
-				options.Add(optionsCounter, item);
-				optionsCounter++;
+				Console.WriteLine(column);
 			}
+			Console.WriteLine("Your first choice: ");
+			var column1 = Console.ReadLine().Trim().ToLower();
 
-			Console.WriteLine("Here are your options:");
-			foreach (var option in options)
+			Console.WriteLine("Please pick a column from these remaining options: ");
+			foreach (var column  in columns)
 			{
-				Console.WriteLine($"{option.Key}: {option.Value}");
+				if (column != column1)
+				{
+					Console.WriteLine(column);
+				}
 			}
-			Console.WriteLine("Please write the number corresponding to the first column you wish to select: ");
-			var column1 = int.Parse(Console.ReadLine());
-			options.Remove(column1);
+			var column2 = Console.ReadLine().Trim().ToLower();
 
-			Console.WriteLine("Here are your remaining options: ");
-			foreach (var option in options)
-			{
-				Console.WriteLine($"{option.Key}: {option.Value}");
-			}
-			Console.WriteLine("Please write the number corresponding to the first column you wish to select: ");
-			var column2 = int.Parse(Console.ReadLine());
 		}
 	}
 }
