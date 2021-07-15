@@ -1,4 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Windows.Forms;
+using System.Linq;
 
 namespace CorrelationCalculator
 {
@@ -10,9 +14,14 @@ namespace CorrelationCalculator
 		/// <summary>
 		/// Main entry point into the console application.
 		/// </summary>
+		[STAThread]
 		private static void Main()
 		{
-			Console.WriteLine("Hello World!");
+			// Prompt user for file
+			Console.WriteLine("Please select a file: \n");
+			var fd = new OpenFileDialog();
+			fd.ShowDialog();
+			var path = fd.FileName;
 		}
 	}
 }
