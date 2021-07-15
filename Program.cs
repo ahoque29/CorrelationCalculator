@@ -22,6 +22,37 @@ namespace CorrelationCalculator
 			var fd = new OpenFileDialog();
 			fd.ShowDialog();
 			var path = fd.FileName;
+
+			// Prompt user to pick two columns
+			var optionsArray = File.ReadLines(path)
+				.First()
+				.Split(',');
+
+			var options = new Dictionary<int, string>();
+			var optionsCounter = 1;
+
+			foreach (var item in optionsArray)
+			{
+				options.Add(optionsCounter, item);
+				optionsCounter++;
+			}
+
+			Console.WriteLine("Here are your options:");
+			foreach (var option in options)
+			{
+				Console.WriteLine($"{option.Key}: {option.Value}");
+			}
+			Console.WriteLine("Please write the number corresponding to the first column you wish to select: ");
+			var column1 = int.Parse(Console.ReadLine());
+			options.Remove(column1);
+
+			Console.WriteLine("Here are your remaining options: ");
+			foreach (var option in options)
+			{
+				Console.WriteLine($"{option.Key}: {option.Value}");
+			}
+			Console.WriteLine("Please write the number corresponding to the first column you wish to select: ");
+			var column2 = int.Parse(Console.ReadLine());
 		}
 	}
 }
