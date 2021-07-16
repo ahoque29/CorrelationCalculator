@@ -90,9 +90,11 @@ namespace CorrelationCalculator
 				sumOfXY += column1[i] * column2[i];
 			}
 
-			var Linear = (n * sumOfXY - sumOfX * sumOfY) / Math.Sqrt((n * sumOfXSquared - Math.Pow(sumOfX, 2)) * (n * sumOfYSquared - Math.Pow(sumOfY, 2)));
+			var Linear = (n * sumOfXY - sumOfX * sumOfY) / Math.Sqrt((n * sumOfXSquared - sumOfX * sumOfX) * (n * sumOfYSquared - sumOfXY * sumOfY));
 
 			Console.WriteLine($"Linear = {Linear}");
+
+			// Spearman correlation coefficient
 		}
 	}
 }
