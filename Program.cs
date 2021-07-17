@@ -9,7 +9,7 @@ namespace CorrelationCalculator
 	/// <summary>
 	/// Class containing the main entry point into the console application.
 	/// </summary>
-	internal class Program
+	class Program
 	{
 		/// <summary>
 		/// Main entry point into the console application.
@@ -33,6 +33,7 @@ namespace CorrelationCalculator
 			{
 				Console.WriteLine(column);
 			}
+			Console.WriteLine();
 			Console.WriteLine("Your first choice: ");
 			var choice1 = Console.ReadLine().Trim();
 			Console.WriteLine();
@@ -45,6 +46,7 @@ namespace CorrelationCalculator
 					Console.WriteLine(column);
 				}
 			}
+			Console.WriteLine();
 			Console.WriteLine("Your second choice:");
 			var choice2 = Console.ReadLine().Trim();
 			Console.WriteLine();
@@ -53,8 +55,7 @@ namespace CorrelationCalculator
 			var column1Index = Array.IndexOf(columns, choice1);
 			var column2Index = Array.IndexOf(columns, choice2);
 
-			List<double> column1 = new List<double>();
-			List<double> column2 = new List<double>();
+			var Samples = new List<Sample>();
 
 			var query = File.ReadAllLines(path)
 				.Skip(1)
@@ -64,8 +65,11 @@ namespace CorrelationCalculator
 			{
 				var entry = item.Split(',');
 
-				column1.Add((double.Parse(entry[column1Index])));
-				column2.Add((double.Parse(entry[column2Index])));
+				Samples.Add(new Sample()
+				{ 
+					X = double.Parse(entry[column1Index]),
+					Y = double.Parse(entry[column2Index])
+				});
 			}
 
 			// Linear correlation coefficient
@@ -78,23 +82,18 @@ namespace CorrelationCalculator
 			// Sum of y^2
 			// Sum of xy
 
-			var n = column1.Count;
-			var sumOfX = column1.Sum();
-			var sumOfXSquared = column1.Sum(d => d * d);
-			var sumOfY = column2.Sum();
-			var sumOfYSquared = column2.Sum(d => d * d);
+			var n = Samples.Count();
+			var sumOfX = Samples.Sum(s => s.X);
+			var sumOfXSquared = Samples.Sum(s => s.X * s.X);
+			var sumOfY = Samples.Sum(s => s.Y);
+			var sumOfYSquared = Samples.Sum(s => s.Y * s.Y);
+			var sumOfXY = Samples.Sum(s => s.X * s.Y);
 
-			double sumOfXY = 0;
-			for (int i = 0; i < column1.Count; i++)
-			{
-				sumOfXY += column1[i] * column2[i];
-			}
-
-			var Linear = (n * sumOfXY - sumOfX * sumOfY) / Math.Sqrt((n * sumOfXSquared - sumOfX * sumOfX) * (n * sumOfYSquared - sumOfXY * sumOfY));
-
-			Console.WriteLine($"Linear = {Linear}");
+			var Linear = (n * sumOfXY - sumOfX * sumOfY) / Math.Sqrt((n * sumOfXSquared - sumOfX * sumOfX) * (n * sumOfYSquared - sumOfY * sumOfY));
+			Console.WriteLine($"Linear Correleation Coefficient: {Linear}");
 
 			// Spearman correlation coefficient
+
 		}
 	}
 }
