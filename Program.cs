@@ -89,11 +89,28 @@ namespace CorrelationCalculator
 			var sumOfYSquared = Samples.Sum(s => s.Y * s.Y);
 			var sumOfXY = Samples.Sum(s => s.X * s.Y);
 
-			var Linear = (n * sumOfXY - sumOfX * sumOfY) / Math.Sqrt((n * sumOfXSquared - sumOfX * sumOfX) * (n * sumOfYSquared - sumOfY * sumOfY));
-			Console.WriteLine($"Linear Correleation Coefficient: {Linear}");
+			var linear = (n * sumOfXY - sumOfX * sumOfY) / Math.Sqrt((n * sumOfXSquared - sumOfX * sumOfX) * (n * sumOfYSquared - sumOfY * sumOfY));
+			Console.WriteLine($"Linear Correleation Coefficient: {linear}");
 
 			// Spearman correlation coefficient
 
+			// Reorder Samples by X and assign rank
+			int rank = 1;
+			foreach (var sample in Samples.OrderByDescending(s => s.X))
+			{
+				sample.RankX = rank;
+				rank++;
+			}
+
+			rank = 1;
+			foreach (var sample in Samples.OrderByDescending(s => s.Y))
+			{
+				sample.RankY = rank;
+				rank++;
+			}
+
+			var spearman = 1 - 6 * Samples.Sum(s => Math.Pow((s.RankX - s.RankY), 2)) / (Math.Pow(n, 3) - n);
+			Console.WriteLine($"Spearman Correleation Coefficient: {spearman}");
 		}
 	}
 }
