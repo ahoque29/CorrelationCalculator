@@ -17,13 +17,11 @@ namespace CorrelationCalculator
 		[STAThread]
 		private static void Main()
 		{
-			// Prompt user for file and store the path
 			Console.WriteLine("Please select a file: \n");
 			var fd = new OpenFileDialog();
 			fd.ShowDialog();
 			var path = fd.FileName;
 
-			// Prompt user to pick two columns and store the names of the columns
 			var columns = File.ReadLines(path)
 				.First()
 				.Split(',');
@@ -55,7 +53,7 @@ namespace CorrelationCalculator
 			var column1Index = Array.IndexOf(columns, choice1);
 			var column2Index = Array.IndexOf(columns, choice2);
 
-			var Samples = new List<Sample>();
+			var samples = new List<Sample>();
 
 			var query = File.ReadAllLines(path)
 				.Skip(1)
@@ -65,52 +63,61 @@ namespace CorrelationCalculator
 			{
 				var entry = item.Split(',');
 
-				Samples.Add(new Sample()
-				{ 
+				samples.Add(new Sample()
+				{
 					X = double.Parse(entry[column1Index]),
 					Y = double.Parse(entry[column2Index])
 				});
 			}
 
 			// Linear correlation coefficient
-			// Formula = (n(sum(xy)) - (sum(x)sum(y))/Sqrt((n(sum(x^2)) - (sum(x))^2)(n(sum(x^2)) - (sum(x))^2))
-			// Required:
-			// n
-			// Sum of x
-			// Sum of x^2
-			// Sum of y
-			// Sum of y^2
-			// Sum of xy
-
-			var n = Samples.Count();
-			var sumOfX = Samples.Sum(s => s.X);
-			var sumOfXSquared = Samples.Sum(s => s.X * s.X);
-			var sumOfY = Samples.Sum(s => s.Y);
-			var sumOfYSquared = Samples.Sum(s => s.Y * s.Y);
-			var sumOfXY = Samples.Sum(s => s.X * s.Y);
+			var n = samples.Count();
+			var sumOfX = samples.Sum(s => s.X);
+			var sumOfXSquared = samples.Sum(s => s.X * s.X);
+			var sumOfY = samples.Sum(s => s.Y);
+			var sumOfYSquared = samples.Sum(s => s.Y * s.Y);
+			var sumOfXY = samples.Sum(s => s.X * s.Y);
 
 			var linear = (n * sumOfXY - sumOfX * sumOfY) / Math.Sqrt((n * sumOfXSquared - sumOfX * sumOfX) * (n * sumOfYSquared - sumOfY * sumOfY));
 			Console.WriteLine($"Linear Correleation Coefficient: {linear}");
 
 			// Spearman correlation coefficient
-
-			// Reorder Samples by X and assign rank
 			int rank = 1;
-			foreach (var sample in Samples.OrderByDescending(s => s.X))
+			foreach (var sample in samples.OrderByDescending(s => s.X))
 			{
 				sample.RankX = rank;
 				rank++;
 			}
 
+			foreach (var ranking in samples.OrderByDescending(s => s.X).GroupBy(s => s.X))
+			{
+				double sumOfRank = ranking.Sum(s => s.RankX);
+
+				foreach (var sample in ranking)
+				{
+					sample.RankX = sumOfRank / ranking.Count();
+				}
+			}
+
 			rank = 1;
-			foreach (var sample in Samples.OrderByDescending(s => s.Y))
+			foreach (var sample in samples.OrderByDescending(s => s.Y))
 			{
 				sample.RankY = rank;
 				rank++;
 			}
 
-			var spearman = 1 - 6 * Samples.Sum(s => Math.Pow((s.RankX - s.RankY), 2)) / (Math.Pow(n, 3) - n);
-			Console.WriteLine($"Spearman Correleation Coefficient: {spearman}");
+			foreach (var ranking in samples.OrderByDescending(s => s.Y).GroupBy(s => s.Y))
+			{
+				double sumOfRank = ranking.Sum(s => s.RankY);
+
+				foreach (var sample in ranking)
+				{
+					sample.RankY = sumOfRank / ranking.Count();
+				}
+			}
+
+			var spearman = 1 - 6 * samples.Sum(s => Math.Pow((s.RankX - s.RankY), 2)) / (Math.Pow(n, 3) - n);
+			Console.WriteLine($"Spearman Rank Correleation Coefficient: {spearman}");
 		}
 	}
 }
