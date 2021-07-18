@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace CorrelationCalculator
@@ -13,11 +11,9 @@ namespace CorrelationCalculator
 	/// </summary>
 	public class FileManager
 	{
-		public string FirstChoice { get; set; }
-		public string SecondChoice { get; set; }
-		public string[] Headers { get; set; }
-		public IEnumerable<string> FileData { get; set; }
-
+		private string firstChoice;
+		private string secondChoice;
+		private string[] headers;
 
 		public string GetPath()
 		{
@@ -29,56 +25,102 @@ namespace CorrelationCalculator
 
 		public void SelectColumns(string path)
 		{
-			Headers = File.ReadLines(path)
+			headers = File.ReadLines(path)
 				.First()
 				.Split(',');
 
 			Console.WriteLine("Please pick a column from these given options: ");
-			foreach (var column in Headers)
+			foreach (var column in headers)
 			{
 				Console.WriteLine(column);
 			}
 			Console.WriteLine();
 			Console.WriteLine("Your first choice: ");
-			FirstChoice = Console.ReadLine().Trim();
+			firstChoice = Console.ReadLine().Trim();
 			Console.WriteLine();
 
 			Console.WriteLine("Please pick a column from these remaining options: ");
-			foreach (var column in Headers)
+			foreach (var column in headers)
 			{
-				if (column != FirstChoice)
+				if (column != firstChoice)
 				{
 					Console.WriteLine(column);
 				}
 			}
 			Console.WriteLine();
 			Console.WriteLine("Your second choice:");
-			SecondChoice = Console.ReadLine().Trim();
+			secondChoice = Console.ReadLine().Trim();
 			Console.WriteLine();
 		}
 
-		public IEnumerable<Sample> Sampler(string firstChoice, string secondChoice, string path)
+		public IEnumerable<Sample> GetSamples(string path)
 		{
-			
-			var column1Index = Array.IndexOf(Headers, firstChoice);
-			var column2Index = Array.IndexOf(Headers, secondChoice);
+			var column1Index = Array.IndexOf(headers, firstChoice);
+			var column2Index = Array.IndexOf(headers, secondChoice);
 
 			var samples = new List<Sample>();
 
-			var FileData = File.ReadAllLines(path)
+			var lines = File.ReadAllLines(path)
 				.Skip(1)
 				.Where(l => l.Length > 1);
 
-			foreach (var item in FileData)
+			foreach (var item in lines)
 			{
 				var entry = item.Split(',');
 
-				samples.Add(new Sample()
+				yield return new Sample()
 				{
 					X = double.Parse(entry[column1Index]),
 					Y = double.Parse(entry[column2Index])
-				});
+				};
 			}
+		}
+
+		public static void SetRanks(IEnumerable<Sample> samples) // MASSIVE DRY VIOLATIONS
+		{
+			// RankX
+			int rank = 1;
+			foreach (var sample in samples.OrderByDescending(s => s.X))
+			{
+				sample.RankX = rank;
+				rank++;
+			}
+
+			foreach (var ranking in samples.OrderByDescending(s => s.X).GroupBy(s => s.X))
+			{
+				double sumOfRank = ranking.Sum(s => s.RankX);
+
+				foreach (var sample in ranking)
+				{
+					sample.RankX = sumOfRank / ranking.Count();
+				}
+			}
+
+			// RankY
+			rank = 1;
+			foreach (var sample in samples.OrderByDescending(s => s.Y))
+			{
+				sample.RankY = rank;
+				rank++;
+			}
+
+			foreach (var ranking in samples.OrderByDescending(s => s.Y).GroupBy(s => s.Y))
+			{
+				double sumOfRank = ranking.Sum(s => s.RankY);
+
+				foreach (var sample in ranking)
+				{
+					sample.RankY = sumOfRank / ranking.Count();
+				}
+			}
+		}
+
+		public IEnumerable<Sample> ProcessFile()
+		{
+			var path = GetPath();
+			SelectColumns(path);
+			var samples = GetSamples(path).ToList();
+			SetRanks(samples);
 
 			return samples;
 		}
