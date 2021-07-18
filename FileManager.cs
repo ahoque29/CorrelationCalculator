@@ -59,7 +59,7 @@ namespace CorrelationCalculator
 			var column1Index = Array.IndexOf(headers, firstChoice);
 			var column2Index = Array.IndexOf(headers, secondChoice);
 
-			var lines = File.ReadAllLines(path)
+			var lines = File.ReadLines(path)
 				.Skip(1)
 				.Where(l => l.Length > 1);
 

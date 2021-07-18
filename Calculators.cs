@@ -21,7 +21,7 @@ namespace CorrelationCalculator
 		public static double SpearmanCorrelation(IEnumerable<Sample> samples)
 		{
 			var n = samples.Count();
-			return 1 - 6 * samples.Sum(s => Math.Pow((s.RankX - s.RankY), 2)) / (Math.Pow(n, 3) - n);
+			return 1 - 6 * samples.Sum(s => Math.Pow(s.RankX - s.RankY, 2)) / (Math.Pow(n, 3) - n);
 		}
 	}
 }
