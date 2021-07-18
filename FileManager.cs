@@ -19,6 +19,7 @@ namespace CorrelationCalculator
 		{
 			Console.WriteLine("Please select a file: \n");
 			var fd = new OpenFileDialog();
+			fd.Filter = "CSV files (*.csv)|*csv";
 			fd.ShowDialog();
 			return fd.FileName;
 		}
@@ -53,12 +54,10 @@ namespace CorrelationCalculator
 			Console.WriteLine();
 		}
 
-		public IEnumerable<Sample> GetSamples(string path)
+		public IEnumerable<Sample> InitialiseSamples(string path)
 		{
 			var column1Index = Array.IndexOf(headers, firstChoice);
 			var column2Index = Array.IndexOf(headers, secondChoice);
-
-			var samples = new List<Sample>();
 
 			var lines = File.ReadAllLines(path)
 				.Skip(1)
@@ -76,7 +75,7 @@ namespace CorrelationCalculator
 			}
 		}
 
-		public static void SetRanks(IEnumerable<Sample> samples) // MASSIVE DRY VIOLATIONS
+		public static void SetRanks(IEnumerable<Sample> samples) // DRY VIOLATIONS
 		{
 			// RankX
 			int rank = 1;
@@ -86,13 +85,13 @@ namespace CorrelationCalculator
 				rank++;
 			}
 
+			// Average out same ranks
 			foreach (var ranking in samples.OrderByDescending(s => s.X).GroupBy(s => s.X))
 			{
-				double sumOfRank = ranking.Sum(s => s.RankX);
-
+				var average = ranking.Average(s => s.RankX);
 				foreach (var sample in ranking)
 				{
-					sample.RankX = sumOfRank / ranking.Count();
+					sample.RankX = average;
 				}
 			}
 
@@ -104,13 +103,13 @@ namespace CorrelationCalculator
 				rank++;
 			}
 
+			// Average out same ranks
 			foreach (var ranking in samples.OrderByDescending(s => s.Y).GroupBy(s => s.Y))
 			{
-				double sumOfRank = ranking.Sum(s => s.RankY);
-
+				var average = ranking.Average(s => s.RankY);
 				foreach (var sample in ranking)
 				{
-					sample.RankY = sumOfRank / ranking.Count();
+					sample.RankY = average;
 				}
 			}
 		}
@@ -119,7 +118,7 @@ namespace CorrelationCalculator
 		{
 			var path = GetPath();
 			SelectColumns(path);
-			var samples = GetSamples(path).ToList();
+			var samples = InitialiseSamples(path).ToList();
 			SetRanks(samples);
 
 			return samples;
