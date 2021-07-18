@@ -11,53 +11,63 @@ namespace CorrelationCalculator
 	/// </summary>
 	public class FileManager
 	{
-		private string firstChoice;
-		private string secondChoice;
-		private string[] headers;
+		private string _firstChoice;
+		private string _secondChoice;
+		private string[] _headers;
 
+		/// <summary>
+		/// Opens a dialog box for the user to select a .csv file and returns the path of the file.
+		/// </summary>
+		/// <returns>
+		/// File path.
+		/// </returns>
 		public string GetPath()
 		{
 			Console.WriteLine("Please select a file: \n");
-			var fd = new OpenFileDialog();
-			fd.Filter = "CSV files (*.csv)|*csv";
+			var fd = new OpenFileDialog
+			{
+				Filter = "CSV files (*.csv)|*csv"				
+			};
 			fd.ShowDialog();
 			return fd.FileName;
 		}
 
-		public void SelectColumns(string path)
+		public void InitialiseHeaders(string path)
 		{
-			headers = File.ReadLines(path)
+			_headers = File.ReadLines(path)
 				.First()
 				.Split(',');
+		}
 
-			Console.WriteLine("Please pick a column from these given options: ");
-			foreach (var column in headers)
+		public void SelectColumns()
+		{
+			Console.WriteLine("Please pick a column from these given options:");
+			foreach (var column in _headers)
 			{
 				Console.WriteLine(column);
 			}
-			Console.WriteLine();
 			Console.WriteLine("Your first choice: ");
-			firstChoice = Console.ReadLine().Trim();
+			_firstChoice = Console.ReadLine().Trim();
 			Console.WriteLine();
 
 			Console.WriteLine("Please pick a column from these remaining options: ");
-			foreach (var column in headers)
+			foreach (var column in _headers)
 			{
-				if (column != firstChoice)
+				if (column != _firstChoice)
 				{
 					Console.WriteLine(column);
 				}
 			}
 			Console.WriteLine();
 			Console.WriteLine("Your second choice:");
-			secondChoice = Console.ReadLine().Trim();
+			_secondChoice = Console.ReadLine().Trim();
 			Console.WriteLine();
 		}
 
 		public IEnumerable<Sample> InitialiseSamples(string path)
 		{
-			var column1Index = Array.IndexOf(headers, firstChoice);
-			var column2Index = Array.IndexOf(headers, secondChoice);
+			var column1Index = Array.IndexOf(_headers, _firstChoice);
+			var column2Index = Array.IndexOf(_headers, _secondChoice);
 
 			var lines = File.ReadLines(path)
 				.Skip(1)
@@ -66,16 +76,22 @@ namespace CorrelationCalculator
 			foreach (var item in lines)
 			{
 				var entry = item.Split(',');
-
-				yield return new Sample()
+				if (double.TryParse(entry[column1Index], out double xValue) && double.TryParse(entry[column2Index], out double yValue))
 				{
-					X = double.Parse(entry[column1Index]),
-					Y = double.Parse(entry[column2Index])
-				};
+					yield return new Sample()
+					{
+						X = xValue,
+						Y = yValue
+					};
+				}
+				else
+				{
+					// Validation here
+				}
 			}
 		}
 
-		public static void SetRanks(IEnumerable<Sample> samples) // DRY VIOLATIONS
+		public static void SetRanks(IEnumerable<Sample> samples) // DRY VIOLATIONS - NOT SURE HOW TO FIX
 		{
 			// RankX
 			int rank = 1;
@@ -117,7 +133,8 @@ namespace CorrelationCalculator
 		public IEnumerable<Sample> ProcessFile()
 		{
 			var path = GetPath();
-			SelectColumns(path);
+			InitialiseHeaders(path);
+			SelectColumns();
 			var samples = InitialiseSamples(path).ToList();
 			SetRanks(samples);
 

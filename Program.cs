@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace CorrelationCalculator
 {
@@ -17,7 +15,7 @@ namespace CorrelationCalculator
 		{
 			var manager = new FileManager();
 
-			List<Sample> samples = manager.ProcessFile().ToList();
+			var samples = manager.ProcessFile();
 			var linear = Calculators.LinearCorrelation(samples);
 			var spearman = Calculators.SpearmanCorrelation(samples);
 
